@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "ava-force",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
