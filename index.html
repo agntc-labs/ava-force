@@ -17,18 +17,21 @@
             user-select: none;
         }
 
-        body {
+        html, body {
             background: #0a0a0a;
             font-family: 'Courier New', monospace;
             overflow: hidden;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
+            width: 100vw;
         }
 
+        /* Main container - full screen */
         #game-container {
-            position: relative;
-            flex: 1;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             background: #000;
@@ -43,6 +46,7 @@
             justify-content: center;
             background: linear-gradient(180deg, #1a0a2e 0%, #0a0a1a 50%, #000 100%);
             overflow: hidden;
+            min-height: 0; /* Important for flex child */
         }
 
         #game-canvas {
@@ -103,14 +107,11 @@
             color: #fff;
         }
 
-        .weapon-icon {
-            color: #4ecdc4;
-        }
-
-        /* Controls Container - Fixed at bottom */
+        /* Controls Section - Fixed at bottom, separate from game */
         #controls {
             height: 140px;
             min-height: 140px;
+            max-height: 140px;
             background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
             border-top: 2px solid #ff6b9d;
             display: flex;
@@ -118,6 +119,7 @@
             justify-content: space-between;
             padding: 10px 20px;
             gap: 20px;
+            flex-shrink: 0;
             z-index: 30;
         }
 
@@ -144,17 +146,19 @@
             transition: all 0.1s;
         }
 
-        .dpad-btn:active, .dpad-btn.active {
-            background: linear-gradient(145deg, #ff6b9d, #c44569);
+        .dpad-btn:active {
+            background: linear-gradient(145deg, #3a3a4e, #2a2a3e);
             border-color: #ff6b9d;
-            color: #fff;
+            color: #ff6b9d;
             transform: scale(0.95);
         }
 
-        .dpad-btn:nth-child(2) { grid-column: 2; }
-        .dpad-btn:nth-child(1) { grid-column: 1; grid-row: 2; }
-        .dpad-btn:nth-child(3) { grid-column: 2; grid-row: 2; }
-        .dpad-btn:nth-child(4) { grid-column: 3; grid-row: 2; }
+        .dpad-btn:empty { pointer-events: none; }
+
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
 
         /* Action Buttons */
         .action-buttons {
@@ -166,79 +170,66 @@
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            border: 3px solid;
+            border: none;
             font-size: 16px;
             font-weight: bold;
+            color: #fff;
+            cursor: pointer;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             transition: all 0.1s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
-        .action-btn:active, .action-btn.active {
-            transform: scale(0.9);
+        .action-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
 
-        .btn-jump {
-            background: linear-gradient(145deg, #4ecdc4, #44a3aa);
-            border-color: #4ecdc4;
-            color: #fff;
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
-        }
-
-        .btn-jump:active, .btn-jump.active {
-            background: #3dbdb4;
-            box-shadow: 0 0 20px #4ecdc4;
-        }
-
-        .btn-shoot {
+        #btn-fire {
             background: linear-gradient(145deg, #ff6b9d, #c44569);
-            border-color: #ff6b9d;
-            color: #fff;
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+            border: 3px solid #ff8fab;
         }
 
-        .btn-shoot:active, .btn-shoot.active {
-            background: #e55a8c;
-            box-shadow: 0 0 20px #ff6b9d;
+        #btn-fire:active {
+            background: linear-gradient(145deg, #ff8fab, #ff6b9d);
         }
 
-        .btn-label {
-            font-size: 10px;
-            opacity: 0.8;
+        #btn-special {
+            background: linear-gradient(145deg, #4ecdc4, #44a3aa);
+            border: 3px solid #7fdbda;
         }
 
-        /* Start/Pause overlay */
-        #overlay {
+        #btn-special:active {
+            background: linear-gradient(145deg, #7fdbda, #4ecdc4);
+        }
+
+        /* Start/Game Over Overlay */
+        .overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0,0,0,0.85);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 50;
+            z-index: 40;
         }
 
-        #overlay h1 {
-            font-size: 48px;
+        .overlay.hidden {
+            display: none;
+        }
+
+        .overlay h1 {
             color: #ff6b9d;
-            text-shadow: 
-                0 0 10px #ff6b9d,
-                3px 3px 0 #c44569;
-            margin-bottom: 10px;
+            font-size: 42px;
+            text-shadow: 4px 4px 0 #c44569;
+            margin-bottom: 20px;
             animation: pulse 2s infinite;
-        }
-
-        #overlay h2 {
-            font-size: 18px;
-            color: #4ecdc4;
-            margin-bottom: 30px;
         }
 
         @keyframes pulse {
@@ -246,69 +237,43 @@
             50% { transform: scale(1.05); }
         }
 
-        .start-btn {
-            padding: 15px 40px;
-            font-size: 20px;
-            background: linear-gradient(145deg, #ff6b9d, #c44569);
-            border: none;
-            border-radius: 30px;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
-            transition: all 0.2s;
-        }
-
-        .start-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.6);
-        }
-
-        .instructions {
-            margin-top: 20px;
+        .overlay p {
             color: #888;
-            font-size: 12px;
+            font-size: 14px;
+            margin-bottom: 30px;
             text-align: center;
             line-height: 1.6;
         }
 
-        .hidden {
-            display: none !important;
-        }
-
-        /* Game Over Screen */
-        #game-over {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 60;
-        }
-
-        #game-over h2 {
-            font-size: 36px;
-            color: #ff6b9d;
-            margin-bottom: 20px;
-        }
-
-        #final-score {
-            font-size: 24px;
+        .overlay-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(145deg, #ff6b9d, #c44569);
+            border: none;
+            border-radius: 8px;
             color: #fff;
-            margin-bottom: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+            transition: all 0.2s;
         }
 
-        /* Landscape optimization */
-        @media (orientation: landscape) and (max-height: 500px) {
+        .overlay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.6);
+        }
+
+        .overlay-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-height: 600px) {
             #controls {
                 height: 100px;
                 min-height: 100px;
+                max-height: 100px;
+                padding: 5px 15px;
             }
 
             .dpad-btn {
@@ -323,10 +288,32 @@
                 font-size: 14px;
             }
         }
+
+        @media (max-width: 350px) {
+            #controls {
+                padding: 5px 10px;
+            }
+
+            .dpad {
+                grid-template-columns: 45px 45px 45px;
+                grid-template-rows: 45px 45px;
+            }
+
+            .dpad-btn {
+                width: 45px;
+                height: 45px;
+            }
+
+            .action-btn {
+                width: 50px;
+                height: 50px;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="game-container">
+        <!-- Game Area -->
         <div id="game-wrapper">
             <canvas id="game-canvas" width="320" height="224"></canvas>
             <div id="crt-overlay"></div>
@@ -338,38 +325,35 @@
                         <span class="hud-label">SCORE</span>
                         <span class="hud-value" id="score">000000</span>
                     </div>
+                </div>
+                <div class="hud-section">
                     <div class="hud-item">
                         <span class="hud-label">LIVES</span>
                         <span class="hud-value" id="lives">3</span>
                     </div>
-                </div>
-                <div class="hud-section">
                     <div class="hud-item">
-                        <span class="weapon-icon" id="weapon">N</span>
+                        <span class="hud-label">WPN</span>
+                        <span class="hud-value" id="weapon">N</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Start Overlay -->
-            <div id="overlay">
-                <h1>🔥 AVA FORCE 🔥</h1>
-                <h2>RED HOT RUN 'N GUN</h2>
-                <button class="start-btn" id="start-btn">INSERT COIN</button>
-                <div class="instructions">
-                    ◀ ▶ MOVE • ▲ JUMP • ● SHOOT<br>
-                    Collect power-ups! Destroy enemies!
-                </div>
+            <!-- Start Screen -->
+            <div class="overlay" id="overlay">
+                <h1>🔥 AVA FORCE</h1>
+                <p>Run and gun action!<br>Collect power-ups, defeat enemies!</p>
+                <button class="overlay-btn" id="start-btn">START GAME</button>
             </div>
 
             <!-- Game Over Screen -->
-            <div id="game-over">
-                <h2>GAME OVER</h2>
-                <div id="final-score">SCORE: 0</div>
-                <button class="start-btn" id="restart-btn">CONTINUE?</button>
+            <div class="overlay hidden" id="game-over">
+                <h1>GAME OVER</h1>
+                <p id="final-score">SCORE: 000000</p>
+                <button class="overlay-btn" id="restart-btn">PLAY AGAIN</button>
             </div>
         </div>
 
-        <!-- Touch Controls -->
+        <!-- Controls Section - Completely separate from game area -->
         <div id="controls">
             <div class="dpad">
                 <div class="dpad-btn" id="btn-up">▲</div>
@@ -377,59 +361,31 @@
                 <div class="dpad-btn" id="btn-down">▼</div>
                 <div class="dpad-btn" id="btn-right">▶</div>
             </div>
-
             <div class="action-buttons">
-                <div class="action-btn btn-jump" id="btn-jump">
-                    <span>JUMP</span>
-                </div>
-                <div class="action-btn btn-shoot" id="btn-shoot">
-                    <span>FIRE</span>
-                </div>
+                <button class="action-btn" id="btn-fire">FIRE</button>
+                <button class="action-btn" id="btn-special">SPC</button>
             </div>
         </div>
     </div>
 
     <script>
         // Initialize Telegram WebApp
-        let tg = window.Telegram?.WebApp;
+        const tg = window.Telegram?.WebApp;
         if (tg) {
             tg.ready();
             tg.expand();
-            tg.enableClosingConfirmation();
         }
 
         // Game Constants
         const CANVAS_WIDTH = 320;
         const CANVAS_HEIGHT = 224;
-        const GRAVITY = 0.4;
-        const JUMP_FORCE = -7;
-        const MOVE_SPEED = 2;
-        const BULLET_SPEED = 6;
+        const GRAVITY = 0.5;
+        const JUMP_FORCE = -8;
+        const MOVE_SPEED = 3;
 
         // Canvas Setup
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
-
-        // Scale canvas for retro look but maintain aspect ratio
-        function resizeCanvas() {
-            const wrapper = document.getElementById('game-wrapper');
-            const aspectRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-            const wrapperAspect = wrapper.clientWidth / wrapper.clientHeight;
-
-            if (wrapperAspect > aspectRatio) {
-                canvas.style.height = wrapper.clientHeight + 'px';
-                canvas.style.width = (wrapper.clientHeight * aspectRatio) + 'px';
-            } else {
-                canvas.style.width = wrapper.clientWidth + 'px';
-                canvas.style.height = (wrapper.clientWidth / aspectRatio) + 'px';
-            }
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // Disable context menu
-        canvas.addEventListener('contextmenu', e => e.preventDefault());
 
         // Game State
         let gameRunning = false;
@@ -440,409 +396,326 @@
 
         // Input State
         const keys = {
-            left: false,
-            right: false,
             up: false,
             down: false,
-            jump: false,
-            shoot: false
+            left: false,
+            right: false,
+            fire: false,
+            special: false
         };
 
-        // Touch Controls Setup
-        function setupTouchButton(id, key) {
-            const btn = document.getElementById(id);
-            
-            const startHandler = (e) => {
-                e.preventDefault();
-                keys[key] = true;
-                btn.classList.add('active');
-                if (tg?.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('light');
-                }
-            };
-            
-            const endHandler = (e) => {
-                e.preventDefault();
-                keys[key] = false;
-                btn.classList.remove('active');
-            };
-
-            btn.addEventListener('touchstart', startHandler, {passive: false});
-            btn.addEventListener('touchend', endHandler, {passive: false});
-            btn.addEventListener('mousedown', startHandler);
-            btn.addEventListener('mouseup', endHandler);
-            btn.addEventListener('mouseleave', endHandler);
-        }
-
-        setupTouchButton('btn-left', 'left');
-        setupTouchButton('btn-right', 'right');
-        setupTouchButton('btn-up', 'up');
-        setupTouchButton('btn-down', 'down');
-        setupTouchButton('btn-jump', 'jump');
-        setupTouchButton('btn-shoot', 'shoot');
-
-        // Keyboard Controls
-        document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowLeft': case 'a': keys.left = true; break;
-                case 'ArrowRight': case 'd': keys.right = true; break;
-                case 'ArrowUp': case 'w': keys.up = true; break;
-                case 'ArrowDown': case 's': keys.down = true; break;
-                case ' ': case 'z': keys.jump = true; break;
-                case 'x': case 'Shift': keys.shoot = true; break;
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            switch(e.key) {
-                case 'ArrowLeft': case 'a': keys.left = false; break;
-                case 'ArrowRight': case 'd': keys.right = false; break;
-                case 'ArrowUp': case 'w': keys.up = false; break;
-                case 'ArrowDown': case 's': keys.down = false; break;
-                case ' ': case 'z': keys.jump = false; break;
-                case 'x': case 'Shift': keys.shoot = false; break;
-            }
-        });
-
         // Game Objects
-        class Player {
-            constructor() {
-                this.x = 50;
-                this.y = 150;
-                this.vx = 0;
-                this.vy = 0;
-                this.width = 16;
-                this.height = 24;
-                this.onGround = false;
-                this.facingRight = true;
-                this.weapon = 'normal'; // normal, spread, laser, rapid
-                this.shootTimer = 0;
-                this.invulnerable = 0;
-                this.animFrame = 0;
-            }
-
-            update() {
-                // Movement
-                if (keys.left) {
-                    this.vx = -MOVE_SPEED;
-                    this.facingRight = false;
-                } else if (keys.right) {
-                    this.vx = MOVE_SPEED;
-                    this.facingRight = true;
-                } else {
-                    this.vx *= 0.8;
-                }
-
-                // Jump
-                if (keys.jump && this.onGround) {
-                    this.vy = JUMP_FORCE;
-                    this.onGround = false;
-                    createParticles(this.x + 8, this.y + 24, 5, '#4ecdc4');
-                }
-
-                // Gravity
-                this.vy += GRAVITY;
-
-                // Update position
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Ground collision
-                if (this.y + this.height > CANVAS_HEIGHT - 20) {
-                    this.y = CANVAS_HEIGHT - 20 - this.height;
-                    this.vy = 0;
-                    this.onGround = true;
-                }
-
-                // Screen bounds
-                this.x = Math.max(0, Math.min(this.x, CANVAS_WIDTH - this.width));
-
-                // Shooting
-                if (this.shootTimer > 0) this.shootTimer--;
-                if (keys.shoot && this.shootTimer <= 0) {
-                    this.shoot();
-                    this.shootTimer = this.weapon === 'rapid' ? 5 : 12;
-                }
-
-                // Invulnerability
-                if (this.invulnerable > 0) this.invulnerable--;
-
-                // Animation
-                if (Math.abs(this.vx) > 0.1 && this.onGround) {
-                    this.animFrame = (this.animFrame + 0.2) % 4;
-                }
-            }
-
-            shoot() {
-                const bulletY = this.y + 10;
-                const bulletX = this.facingRight ? this.x + this.width : this.x;
-                const dir = this.facingRight ? 1 : -1;
-
-                if (this.weapon === 'spread') {
-                    bullets.push(new Bullet(bulletX, bulletY - 3, dir, -0.3));
-                    bullets.push(new Bullet(bulletX, bulletY, dir, 0));
-                    bullets.push(new Bullet(bulletX, bulletY + 3, dir, 0.3));
-                } else if (this.weapon === 'laser') {
-                    bullets.push(new Bullet(bulletX, bulletY, dir * 2, 0, true));
-                } else {
-                    bullets.push(new Bullet(bulletX, bulletY, dir, 0));
-                }
-
-                if (tg?.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('light');
-                }
-            }
-
-            draw() {
-                if (this.invulnerable > 0 && Math.floor(frame / 4) % 2 === 0) return;
-
-                ctx.save();
-                
-                // Draw Ava - red outfit, red hair
-                const x = Math.floor(this.x);
-                const y = Math.floor(this.y);
-
-                // Body (red outfit)
-                ctx.fillStyle = '#c44569';
-                ctx.fillRect(x + 4, y + 8, 8, 12);
-
-                // Legs
-                ctx.fillStyle = '#2a2a3e';
-                if (Math.abs(this.vx) > 0.1 && this.onGround) {
-                    const legOffset = Math.sin(this.animFrame * Math.PI / 2) * 3;
-                    ctx.fillRect(x + 3, y + 20, 4, 4 + legOffset);
-                    ctx.fillRect(x + 9, y + 20, 4, 4 - legOffset);
-                } else {
-                    ctx.fillRect(x + 3, y + 20, 4, 4);
-                    ctx.fillRect(x + 9, y + 20, 4, 4);
-                }
-
-                // Red hair
-                ctx.fillStyle = '#ff6b6b';
-                ctx.fillRect(x + 2, y, 12, 6);
-                ctx.fillRect(x, y + 2, 2, 8); // Long hair side
-                ctx.fillRect(x + 14, y + 2, 2, 8);
-
-                // Head
-                ctx.fillStyle = '#f4d03f';
-                ctx.fillRect(x + 4, y + 2, 8, 7);
-
-                // Eyes (blue)
-                ctx.fillStyle = '#4ecdc4';
-                if (this.facingRight) {
-                    ctx.fillRect(x + 9, y + 4, 2, 2);
-                } else {
-                    ctx.fillRect(x + 5, y + 4, 2, 2);
-                }
-
-                // Gun
-                ctx.fillStyle = '#888';
-                if (this.facingRight) {
-                    ctx.fillRect(x + 12, y + 10, 6, 3);
-                } else {
-                    ctx.fillRect(x - 2, y + 10, 6, 3);
-                }
-
-                ctx.restore();
-            }
-
-            hit() {
-                if (this.invulnerable > 0) return false;
-                this.invulnerable = 60;
-                createParticles(this.x + 8, this.y + 12, 10, '#ff6b6b');
-                return true;
-            }
-        }
-
-        class Bullet {
-            constructor(x, y, vx, vy, isLaser = false) {
-                this.x = x;
-                this.y = y;
-                this.vx = vx * BULLET_SPEED;
-                this.vy = vy * BULLET_SPEED;
-                this.isLaser = isLaser;
-                this.width = isLaser ? 16 : 4;
-                this.height = isLaser ? 2 : 2;
-                this.lifetime = 60;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.lifetime--;
-            }
-
-            draw() {
-                ctx.fillStyle = this.isLaser ? '#00ff00' : '#ffff00';
-                if (this.isLaser) {
-                    ctx.fillRect(Math.floor(this.x), Math.floor(this.y) - 1, this.width, this.height);
-                } else {
-                    ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.width, this.height);
-                }
-            }
-
-            isOffScreen() {
-                return this.x < 0 || this.x > CANVAS_WIDTH || this.y < 0 || this.y > CANVAS_HEIGHT || this.lifetime <= 0;
-            }
-        }
-
-        class Enemy {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.type = type; // 'grunt', 'flying', 'tank'
-                this.vx = type === 'flying' ? -1.5 : -1;
-                this.vy = 0;
-                this.width = type === 'tank' ? 24 : 16;
-                this.height = type === 'tank' ? 16 : 16;
-                this.hp = type === 'tank' ? 3 : 1;
-                this.animFrame = 0;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.animFrame += 0.1;
-
-                if (this.type === 'flying') {
-                    this.y += Math.sin(this.animFrame) * 0.5;
-                }
-            }
-
-            draw() {
-                const x = Math.floor(this.x);
-                const y = Math.floor(this.y);
-
-                if (this.type === 'grunt') {
-                    // Robot soldier
-                    ctx.fillStyle = '#556';
-                    ctx.fillRect(x + 2, y + 2, 12, 12);
-                    ctx.fillStyle = '#f44';
-                    ctx.fillRect(x + 5, y + 5, 6, 3); // Eye
-                } else if (this.type === 'flying') {
-                    // Drone
-                    ctx.fillStyle = '#7b68ee';
-                    ctx.fillRect(x, y + 4, 16, 8);
-                    ctx.fillStyle = '#f44';
-                    ctx.fillRect(x + 4, y + 6, 8, 4);
-                    // Propeller
-                    if (Math.floor(this.animFrame * 10) % 2 === 0) {
-                        ctx.fillStyle = '#888';
-                        ctx.fillRect(x - 4, y + 6, 24, 2);
-                    }
-                } else if (this.type === 'tank') {
-                    // Tank
-                    ctx.fillStyle = '#4a4';
-                    ctx.fillRect(x, y + 4, 24, 12);
-                    ctx.fillStyle = '#2a2';
-                    ctx.fillRect(x + 4, y, 16, 8); // Turret
-                    // Tread animation
-                    ctx.fillStyle = '#222';
-                    ctx.fillRect(x + 2 + (Math.floor(this.animFrame) % 2) * 2, y + 14, 20, 2);
-                }
-            }
-
-            isOffScreen() {
-                return this.x < -32;
-            }
-        }
-
-        class PowerUp {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.type = type; // 'S', 'L', 'R', '1UP'
-                this.vy = -2;
-                this.vx = -0.5;
-                this.bob = 0;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += 0.05;
-                this.bob += 0.1;
-
-                // Floor bounce
-                if (this.y > CANVAS_HEIGHT - 30) {
-                    this.y = CANVAS_HEIGHT - 30;
-                    this.vy = -1;
-                }
-            }
-
-            draw() {
-                const x = Math.floor(this.x);
-                const y = Math.floor(this.y + Math.sin(this.bob) * 2);
-
-                // Box
-                ctx.fillStyle = '#ffd700';
-                ctx.fillRect(x, y, 16, 16);
-                ctx.strokeStyle = '#ff8c00';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(x, y, 16, 16);
-
-                // Letter
-                ctx.fillStyle = '#000';
-                ctx.font = 'bold 10px monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText(this.type, x + 8, y + 12);
-            }
-
-            isOffScreen() {
-                return this.x < -16;
-            }
-        }
-
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.vx = (Math.random() - 0.5) * 4;
-                this.vy = (Math.random() - 0.5) * 4;
-                this.life = 20;
-                this.color = color;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life--;
-            }
-
-            draw() {
-                const alpha = this.life / 20;
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = alpha;
-                ctx.fillRect(Math.floor(this.x), Math.floor(this.y), 2, 2);
-                ctx.globalAlpha = 1;
-            }
-        }
-
-        // Game Objects Arrays
         let player;
         let bullets = [];
         let enemies = [];
         let powerUps = [];
         let particles = [];
 
-        // Create particle explosion
+        // Player Class
+        class Player {
+            constructor() {
+                this.x = 50;
+                this.y = CANVAS_HEIGHT - 60;
+                this.width = 16;
+                this.height = 24;
+                this.vx = 0;
+                this.vy = 0;
+                this.grounded = false;
+                this.weapon = 'normal';
+                this.invulnerable = 0;
+                this.facing = 1;
+            }
+
+            update() {
+                // Horizontal movement
+                if (keys.left) {
+                    this.vx = -MOVE_SPEED;
+                    this.facing = -1;
+                } else if (keys.right) {
+                    this.vx = MOVE_SPEED;
+                    this.facing = 1;
+                } else {
+                    this.vx *= 0.8;
+                }
+
+                // Jump
+                if (keys.up && this.grounded) {
+                    this.vy = JUMP_FORCE;
+                    this.grounded = false;
+                }
+
+                // Apply gravity
+                this.vy += GRAVITY;
+
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Floor collision
+                if (this.y + this.height > CANVAS_HEIGHT - 20) {
+                    this.y = CANVAS_HEIGHT - 20 - this.height;
+                    this.vy = 0;
+                    this.grounded = true;
+                }
+
+                // Screen boundaries
+                if (this.x < 0) this.x = 0;
+                if (this.x > CANVAS_WIDTH - this.width) this.x = CANVAS_WIDTH - this.width;
+
+                // Fire weapon
+                if (keys.fire && frame % 10 === 0) {
+                    this.fire();
+                }
+
+                // Invulnerability countdown
+                if (this.invulnerable > 0) this.invulnerable--;
+            }
+
+            fire() {
+                if (this.weapon === 'spread') {
+                    bullets.push(new Bullet(this.x + this.width/2, this.y + 8, 6, 0));
+                    bullets.push(new Bullet(this.x + this.width/2, this.y + 8, 5, -2));
+                    bullets.push(new Bullet(this.x + this.width/2, this.y + 8, 5, 2));
+                } else if (this.weapon === 'laser') {
+                    bullets.push(new Bullet(this.x + this.width/2, this.y + 8, 10, 0, 'laser'));
+                } else if (this.weapon === 'rapid') {
+                    bullets.push(new Bullet(this.x + this.width/2, this.y + 8, 8, 0));
+                    if (frame % 5 === 0) {
+                        bullets.push(new Bullet(this.x + this.width/2, this.y + 4, 8, 0));
+                    }
+                } else {
+                    bullets.push(new Bullet(this.x + this.width/2, this.y + 8, 6, 0));
+                }
+            }
+
+            draw() {
+                if (this.invulnerable > 0 && frame % 4 < 2) return;
+
+                // Body
+                ctx.fillStyle = '#ff6b9d';
+                ctx.fillRect(this.x + 4, this.y + 8, 8, 12);
+
+                // Head
+                ctx.fillStyle = '#ffcccc';
+                ctx.fillRect(this.x + 4, this.y, 8, 8);
+
+                // Hair
+                ctx.fillStyle = '#ff1493';
+                ctx.fillRect(this.x + 2, this.y, 12, 4);
+                ctx.fillRect(this.x, this.y + 2, 4, 6);
+
+                // Eye
+                ctx.fillStyle = '#000';
+                ctx.fillRect(this.x + (this.facing > 0 ? 10 : 6), this.y + 3, 2, 2);
+
+                // Legs (animated)
+                ctx.fillStyle = '#2d1b4e';
+                if (Math.abs(this.vx) > 0.5) {
+                    const legOffset = Math.sin(frame * 0.3) * 3;
+                    ctx.fillRect(this.x + 4, this.y + 20, 3, 4 + legOffset);
+                    ctx.fillRect(this.x + 9, this.y + 20, 3, 4 - legOffset);
+                } else {
+                    ctx.fillRect(this.x + 4, this.y + 20, 3, 4);
+                    ctx.fillRect(this.x + 9, this.y + 20, 3, 4);
+                }
+
+                // Weapon
+                ctx.fillStyle = '#4ecdc4';
+                ctx.fillRect(this.x + (this.facing > 0 ? 12 : 2), this.y + 10, 6, 3);
+            }
+
+            hit() {
+                if (this.invulnerable > 0) return false;
+                this.invulnerable = 60;
+                createParticles(this.x + 8, this.y + 12, 10, '#ff6b9d');
+                return true;
+            }
+        }
+
+        // Bullet Class
+        class Bullet {
+            constructor(x, y, vx, vy, type = 'normal') {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.width = 8;
+                this.height = 4;
+                this.type = type;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw() {
+                if (this.type === 'laser') {
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(this.x, this.y - 1, 16, 3);
+                    ctx.fillStyle = '#ccffcc';
+                    ctx.fillRect(this.x, this.y, 12, 1);
+                } else {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(this.x + 2, this.y + 1, 4, 2);
+                }
+            }
+
+            isOffScreen() {
+                return this.x > CANVAS_WIDTH || this.x < 0 || this.y > CANVAS_HEIGHT || this.y < 0;
+            }
+        }
+
+        // Enemy Class
+        class Enemy {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.width = 16;
+                this.height = 16;
+                this.hp = type === 'tank' ? 3 : 1;
+                this.vx = type === 'flying' ? -2 : -1;
+                this.vy = 0;
+                this.startY = y;
+            }
+
+            update() {
+                this.x += this.vx;
+
+                if (this.type === 'flying') {
+                    this.y = this.startY + Math.sin(frame * 0.05) * 20;
+                }
+            }
+
+            draw() {
+                if (this.type === 'tank') {
+                    // Tank body
+                    ctx.fillStyle = '#8b0000';
+                    ctx.fillRect(this.x, this.y + 4, 16, 12);
+                    // Turret
+                    ctx.fillStyle = '#a52a2a';
+                    ctx.fillRect(this.x + 4, this.y, 8, 8);
+                    // Tracks
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(this.x - 2, this.y + 12, 4, 6);
+                    ctx.fillRect(this.x + 14, this.y + 12, 4, 6);
+                } else if (this.type === 'flying') {
+                    // Drone body
+                    ctx.fillStyle = '#4a0080';
+                    ctx.fillRect(this.x + 4, this.y + 4, 8, 8);
+                    // Rotors
+                    ctx.fillStyle = '#666';
+                    const rotorOffset = Math.sin(frame * 0.5) * 3;
+                    ctx.fillRect(this.x, this.y + 6 + rotorOffset, 4, 2);
+                    ctx.fillRect(this.x + 12, this.y + 6 - rotorOffset, 4, 2);
+                } else {
+                    // Grunt
+                    ctx.fillStyle = '#2d5016';
+                    ctx.fillRect(this.x + 2, this.y, 12, 14);
+                    // Head
+                    ctx.fillStyle = '#4a7c2e';
+                    ctx.fillRect(this.x + 4, this.y + 2, 8, 6);
+                    // Eyes
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(this.x + 5, this.y + 4, 2, 2);
+                    ctx.fillRect(this.x + 9, this.y + 4, 2, 2);
+                }
+            }
+
+            isOffScreen() {
+                return this.x < -20;
+            }
+        }
+
+        // PowerUp Class
+        class PowerUp {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.width = 16;
+                this.height = 16;
+                this.vy = -2;
+                this.startX = x;
+            }
+
+            update() {
+                this.x = this.startX + Math.sin(frame * 0.05) * 10;
+                this.y += this.vy;
+                if (this.y < CANVAS_HEIGHT - 80) this.vy = 0.5;
+                if (this.y > CANVAS_HEIGHT - 40) this.vy = -0.5;
+            }
+
+            draw() {
+                const colors = { S: '#ff6b6b', L: '#4ecdc4', R: '#ffd93d', '1UP': '#95e1d3' };
+                ctx.fillStyle = colors[this.type] || '#fff';
+                ctx.fillRect(this.x + 2, this.y + 2, 12, 12);
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px monospace';
+                ctx.fillText(this.type, this.x + 4, this.y + 12);
+                
+                // Glow
+                ctx.strokeStyle = colors[this.type];
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x, this.y, 16, 16);
+            }
+
+            isOffScreen() {
+                return this.x < -20;
+            }
+        }
+
+        // Particle Class
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6;
+                this.life = 30;
+                this.color = color;
+                this.size = Math.random() * 4 + 2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.2;
+                this.life--;
+                this.size *= 0.95;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life / 30;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+                ctx.globalAlpha = 1;
+            }
+        }
+
         function createParticles(x, y, count, color) {
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle(x, y, color));
             }
         }
 
-        // Level generation
+        // Enemy Spawning
         function spawnEnemies() {
             if (frame % 120 === 0) {
-                const types = ['grunt', 'grunt', 'flying', 'tank'];
-                const type = types[Math.floor(Math.random() * types.length)];
-                const y = type === 'flying' ? 50 + Math.random() * 100 : CANVAS_HEIGHT - 36;
+                const rand = Math.random();
+                let type = 'grunt';
+                if (rand > 0.7) type = 'flying';
+                if (rand > 0.9) type = 'tank';
+                
+                const y = type === 'flying' ? CANVAS_HEIGHT - 100 - Math.random() * 60 : CANVAS_HEIGHT - 40;
                 enemies.push(new Enemy(CANVAS_WIDTH + 20, y, type));
             }
         }
 
-        // Collision detection
+        // Collision Detection
         function checkCollision(a, b) {
             return a.x < b.x + b.width &&
                    a.x + a.width > b.x &&
@@ -1031,6 +904,67 @@
             }
         }
 
+        // Touch Controls Setup
+        function setupTouchControls() {
+            const buttons = {
+                'btn-up': 'up',
+                'btn-down': 'down',
+                'btn-left': 'left',
+                'btn-right': 'right',
+                'btn-fire': 'fire',
+                'btn-special': 'special'
+            };
+
+            for (const [btnId, key] of Object.entries(buttons)) {
+                const btn = document.getElementById(btnId);
+                
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    keys[key] = true;
+                    if (tg?.HapticFeedback) {
+                        tg.HapticFeedback.impactOccurred('light');
+                    }
+                });
+
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    keys[key] = false;
+                });
+
+                // Mouse fallback for desktop testing
+                btn.addEventListener('mousedown', (e) => {
+                    keys[key] = true;
+                });
+
+                btn.addEventListener('mouseup', (e) => {
+                    keys[key] = false;
+                });
+            }
+        }
+
+        // Keyboard Controls
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp': case 'w': keys.up = true; break;
+                case 'ArrowDown': case 's': keys.down = true; break;
+                case 'ArrowLeft': case 'a': keys.left = true; break;
+                case 'ArrowRight': case 'd': keys.right = true; break;
+                case ' ': case 'z': keys.fire = true; break;
+                case 'x': case 'Shift': keys.special = true; break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            switch(e.key) {
+                case 'ArrowUp': case 'w': keys.up = false; break;
+                case 'ArrowDown': case 's': keys.down = false; break;
+                case 'ArrowLeft': case 'a': keys.left = false; break;
+                case 'ArrowRight': case 'd': keys.right = false; break;
+                case ' ': case 'z': keys.fire = false; break;
+                case 'x': case 'Shift': keys.special = false; break;
+            }
+        });
+
         // Event Listeners
         document.getElementById('start-btn').addEventListener('click', () => {
             if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
@@ -1042,7 +976,8 @@
             startGame();
         });
 
-        // Start game loop
+        // Initialize
+        setupTouchControls();
         gameLoop();
     </script>
 </body>
