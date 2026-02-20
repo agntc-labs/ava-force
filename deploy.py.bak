@@ -1,0 +1,33 @@
+import firebase_admin
+from firebase_admin import credentials
+import requests
+import json
+import os
+
+# Initialize with service account
+cred = credentials.Certificate('/Users/admin/Projects/agentic-labs/firebase-service-account.json')
+firebase_admin.initialize_app(cred, {'projectId': 'agentic-labs'})
+
+# Get access token
+from google.auth.transport import requests as google_requests
+from google.oauth2 import service_account
+
+SCOPES = ['https://www.googleapis.com/auth/firebase.hosting']
+credentials = service_account.Credentials.from_service_account_file(
+    '/Users/admin/Projects/agentic-labs/firebase-service-account.json', scopes=SCOPES)
+request = google_requests.Request()
+credentials.refresh(request)
+access_token = credentials.token
+
+print(f"Got access token: {access_token[:20]}...")
+
+# Create a new version
+project_id = "agentic-labs"
+site_id = "ava-force"
+
+# First, check if site exists
+url = f"https://firebasehosting.googleapis.com/v1beta1/projects/{project_id}/sites"
+headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+resp = requests.get(url, headers=headers)
+print(f"Sites list: {resp.status_code}")
+print(resp.text[:500])

@@ -468,6 +468,11 @@
                     this.fire();
                 }
 
+                // Death plane - fall off world
+                if (this.y > CANVAS_HEIGHT) {
+                    this.die();
+                }
+
                 // Invulnerability countdown
                 if (this.invulnerable > 0) this.invulnerable--;
             }
@@ -523,6 +528,24 @@
                 // Weapon
                 ctx.fillStyle = '#4ecdc4';
                 ctx.fillRect(this.x + (this.facing > 0 ? 12 : 2), this.y + 10, 6, 3);
+            }
+
+            die() {
+                // Reset player to spawn point when falling off world
+                this.x = 50;
+                this.y = 50;
+                this.vx = 0;
+                this.vy = 0;
+                this.invulnerable = 120;
+                createParticles(this.x, this.y, 20, "#ff6b9d");
+                // Lose a life
+                lives--;
+                if (lives <= 0) {
+                    gameOver();
+                }
+                if (tg?.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred("error");
+                }
             }
 
             hit() {
